@@ -1,0 +1,85 @@
+import requests
+import pandas as pd
+
+# URL of the airport data
+AIRPORT_DATA_URL = "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat"
+
+# Output CSV file name
+OUTPUT_CSV_FILE = "airports.csv"
+
+def fetch_airport_data(url):
+    """
+    Fetch airport data from the given URL.
+    """
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error for HTTP issues
+        return response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching airport data: {e}")
+        return None
+
+def parse_airport_data(raw_data):
+    """
+    Parse the raw airport data into a list of dictionaries.
+    """
+    airports = []
+    for line in raw_data.splitlines():
+        # Split the line by commas, accounting for quoted fields
+        fields = line.split(',')
+        if len(fields) >= 14:  # Ensure the line has enough fields
+            try:
+                # Extract and validate required fields
+                latitude = float(fields[6].strip('"')) if fields[6].strip('"').replace('.', '', 1).isdigit() else None
+                longitude = float(fields[7].strip('"')) if fields[7].strip('"').replace('.', '', 1).isdigit() else None
+                altitude = int(fields[8].strip('"')) if fields[8].strip('"').isdigit() else None
+
+                airport = {
+                    'Airport ID': fields[0].strip('"'),
+                    'Name': fields[1].strip('"'),
+                    'City': fields[2].strip('"'),
+                    'Country': fields[3].strip('"'),
+                    'IATA': fields[4].strip('"'),
+                    'ICAO': fields[5].strip('"'),
+                    'Latitude': latitude,
+                    'Longitude': longitude,
+                    'Altitude': altitude,
+                    'Timezone': fields[9].strip('"'),
+                    'DST': fields[10].strip('"'),
+                    'Tz Database Time Zone': fields[11].strip('"'),
+                    'Type': fields[12].strip('"'),
+                    'Source': fields[13].strip('"')
+                }
+                airports.append(airport)
+            except ValueError:
+                # Skip rows with invalid numeric data
+                print(f"Skipping invalid row: {line}")
+                continue
+    return airports
+
+def save_to_csv(airports, output_file):
+    """
+    Save the parsed airport data to a CSV file.
+    """
+    df = pd.DataFrame(airports)
+    df.to_csv(output_file, index=False)
+    print(f"Airport data saved to {output_file}")
+
+def main():
+    # Step 1: Fetch the raw airport data
+    raw_data = fetch_airport_data(AIRPORT_DATA_URL)
+    if not raw_data:
+        print("Failed to fetch airport data.")
+        return
+
+    # Step 2: Parse the raw data into a structured format
+    airports = parse_airport_data(raw_data)
+    if not airports:
+        print("No valid airport data found.")
+        return
+
+    # Step 3: Save the parsed data to a CSV file
+    save_to_csv(airports, OUTPUT_CSV_FILE)
+
+if __name__ == "__main__":
+    main()
