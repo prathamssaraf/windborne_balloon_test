@@ -127,9 +127,92 @@
             font-size: 1rem;
             color: #2c3e50;
         }
+
+        /* Warning Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        .close-button:hover {
+            color: black;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+
+        .modal-content li {
+            margin-bottom: 10px;
+        }
+
+        .modal-content a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-image {
+            width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
+    <!-- Warning Modal -->
+    <div id="warningModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Important Notice</h2>
+            <div>
+                <p><strong>Demo:</strong></p>
+                <img src="ss.jpg" alt="Balloon Analysis Demo" class="demo-image" style="max-width: 100%; height: auto;">
+                
+                <p><strong>Please Note:</strong></p>
+                <ul>
+                    <li>This is a test visualization for balloon flight paths and nearby aircraft.</li>
+                    <li>Many balloon pointers may not show nearby flight traffic because there might not be many planes surrounding that area. To observe please choose a region with higher airplane density like India.</li>
+                    <li>The data shown is for demonstration purposes only and should not be used for actual flight planning.</li>
+                    <li>For actual flight operations, please consult official aviation authorities and weather services.</li>
+                </ul>
+                
+                <p>View the complete source code on <a href="https://github.com/prathamssaraf/windborne_balloon_test" target="_blank">GitHub</a>.</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Header -->
     <h1>Balloon Analysis</h1>
     
@@ -160,6 +243,27 @@
 
         // Initialize the map and populate it with balloon data
         initializeMap(balloonData);
+
+        // Warning Modal functionality
+        const modal = document.getElementById("warningModal");
+        const closeButton = document.getElementsByClassName("close-button")[0];
+
+        // Show modal when page loads
+        window.onload = function() {
+            modal.style.display = "block";
+        }
+
+        // Close modal when clicking the close button
+        closeButton.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
 
         // Populate the dropdown with balloon options
         const balloonSelect = document.getElementById('balloon-select');
@@ -313,7 +417,7 @@
             markers = [];
             flightMarkers = [];
             balloonData.forEach((balloon, index) => {
-                if (balloon.latitude && balloon.longitude) {
+                if (balloon.latitude && longitude) {
                     const marker = L.circleMarker([balloon.latitude, balloon.longitude], { 
                         color: '#2980b9', 
                         fillColor: '#3498db', 
